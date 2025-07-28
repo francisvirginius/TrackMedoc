@@ -1,0 +1,10 @@
+[requires]
+cpp-httplib/0.15.1
+spdlog/1.13.0
+
+[generators]
+CMakeDeps
+CMakeToolchain
+
+[layout]
+cmake_layout

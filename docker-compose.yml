@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  api:
+    build: ./TruckMedoc
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./TruckMedoc:/app
+    depends_on:
+      - db
+      - redis
+    environment:
+      MYSQL_HOST: db
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+      MYSQL_DATABASE: molecules
+      REDIS_HOST: redis
+
+  frontend:
+    build: ./molecule-dashboard
+    ports:
+      - "3000:80"
+    volumes:
+      - ./molecule-dashboard:/app
+    depends_on:
+      - api
+
+  db:
+    image: mysql:8
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: molecules
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  mysql_data:
+  redis_data:

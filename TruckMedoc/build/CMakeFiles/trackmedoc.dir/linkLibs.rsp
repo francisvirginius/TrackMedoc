@@ -1,0 +1,1 @@
+  -LC:/Users/Francis/.conan2/p/b/spdlo1f5ef53790394/p/lib  -LC:/Users/Francis/.conan2/p/b/fmt2041e8ffc7b60/p/lib  -lcrypt32 -lcryptui -lws2_32 C:/Users/Francis/.conan2/p/b/spdlo1f5ef53790394/p/lib/libspdlog.a C:/Users/Francis/.conan2/p/b/fmt2041e8ffc7b60/p/lib/libfmt.a -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 
