@@ -1,0 +1,18 @@
+[requires]
+# JSON parsing
+nlohmann_json/3.11.2
+# Logging
+spdlog/1.12.0
+# Formatting
+fmt/10.1.1
+
+[generators]
+CMakeDeps
+CMakeToolchain
+
+[options]
+spdlog/*:shared=False
+fmt/*:shared=False
+
+[layout]
+cmake_layout

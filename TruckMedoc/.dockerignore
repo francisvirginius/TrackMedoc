@@ -1,0 +1,44 @@
+# .dockerignore pour TruckMedoc
+
+# Ignorer les fichiers de build Windows/locaux
+build/
+*.exe
+*.obj
+*.pdb
+
+# Ignorer les fichiers Conan générés localement (ils seront regénérés dans le container)
+conan_toolchain.cmake
+cmakedeps_macros.cmake
+conanbuild.bat
+conanbuildenv-*.bat
+conanrun.bat
+conanrunenv-*.bat
+deactivate_*.bat
+conandeps_legacy.cmake
+*-config.cmake
+*-config-version.cmake
+*Targets.cmake
+*-Target-*.cmake
+*-release-x86_64-data.cmake
+
+# Ignorer les dossiers de cache
+.conan/
+__pycache__/
+.pytest_cache/
+
+# Ignorer les fichiers IDE
+.vscode/
+.vs/
+*.vcxproj*
+*.sln
+
+# Ignorer les fichiers Git
+.git/
+.gitignore
+
+# Ignorer les logs
+*.log
+
+# Ignorer les fichiers temporaires
+*.tmp
+*.temp

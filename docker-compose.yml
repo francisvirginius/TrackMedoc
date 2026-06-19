@@ -1,48 +1,101 @@
-version: '3.8'
-
+# Docker Compose pour TruckMedoc - version corrigée
 services:
-  api:
-    build: ./TruckMedoc
-    ports:
-      - "8080:8080"
-    volumes:
-      - ./TruckMedoc:/app
-    depends_on:
-      - db
-      - redis
-    environment:
-      MYSQL_HOST: db
-      MYSQL_USER: root
-      MYSQL_PASSWORD: root
-      MYSQL_DATABASE: molecules
-      REDIS_HOST: redis
-
-  frontend:
-    build: ./molecule-dashboard
-    ports:
-      - "3000:80"
-    volumes:
-      - ./molecule-dashboard:/app
-    depends_on:
-      - api
-
+  # Base de données MySQL
   db:
-    image: mysql:8
+    image: mysql:8.0
+    container_name: truck_medoc_db
+    restart: unless-stopped
     ports:
       - "3306:3306"
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: molecules
+      MYSQL_USER: apiuser
+      MYSQL_PASSWORD: apipassword
     volumes:
       - mysql_data:/var/lib/mysql
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - truck_medoc_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
 
+  # Cache Redis
   redis:
-    image: redis:7
+    image: redis:7-alpine
+    container_name: truck_medoc_redis
+    restart: unless-stopped
     ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    networks:
+      - truck_medoc_network
+    command: redis-server --appendonly yes
 
+  # API Backend C++
+  api:
+    build: 
+      context: ./TruckMedoc
+      dockerfile: Dockerfile
+    container_name: truck_medoc_api
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      # Configuration base de données
+      MYSQL_HOST: db
+      MYSQL_PORT: 3306
+      MYSQL_USER: apiuser
+      MYSQL_PASSWORD: apipassword
+      MYSQL_DATABASE: molecules
+      # Configuration Redis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      # Configuration API
+      API_PORT: 8080
+      LOG_LEVEL: info
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - truck_medoc_network
+    # Pour le développement - mount le code source
+    # volumes:
+    #   - ./TruckMedoc/src:/app/src:ro
+
+  # Frontend React
+  frontend:
+    build: 
+      context: ./molecule-dashboard
+      dockerfile: Dockerfile
+    container_name: truck_medoc_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    environment:
+      REACT_APP_API_URL: http://localhost:8080
+      REACT_APP_ENV: development
+    depends_on:
+      - api
+    networks:
+      - truck_medoc_network
+
+# Volumes persistants
 volumes:
   mysql_data:
+    driver: local
   redis_data:
+    driver: local
+
+# Réseau isolé
+networks:
+  truck_medoc_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

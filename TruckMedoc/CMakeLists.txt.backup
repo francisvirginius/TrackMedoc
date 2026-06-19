@@ -1,0 +1,58 @@
+cmake_minimum_required(VERSION 3.20)
+project(TruckMedoc)
+
+# Standard C++
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Trouver les dépendances Conan
+find_package(httplib REQUIRED)
+find_package(nlohmann_json REQUIRED)
+find_package(spdlog REQUIRED)
+find_package(fmt REQUIRED)
+
+# Trouver MySQL (système) - optionnel selon tes besoins
+find_package(PkgConfig QUIET)
+if(PkgConfig_FOUND)
+    pkg_check_modules(MYSQLCPPCONN mysqlcppconn)
+endif()
+
+# Sources de l'application
+set(SOURCES
+    src/main.cpp
+    src/api_server.cpp
+    src/database.cpp
+    src/molecule_controller.cpp
+)
+
+# Créer l'exécutable
+add_executable(truck_medoc_api ${SOURCES})
+
+# Lier les bibliothèques Conan
+target_link_libraries(truck_medoc_api 
+    PRIVATE 
+    httplib::httplib
+    nlohmann_json::nlohmann_json
+    spdlog::spdlog
+    fmt::fmt
+)
+
+# Lier MySQL si disponible
+if(MYSQLCPPCONN_FOUND)
+    target_include_directories(truck_medoc_api PRIVATE ${MYSQLCPPCONN_INCLUDE_DIRS})
+    target_link_libraries(truck_medoc_api PRIVATE ${MYSQLCPPCONN_LIBRARIES})
+    target_compile_options(truck_medoc_api PRIVATE ${MYSQLCPPCONN_CFLAGS_OTHER})
+    target_compile_definitions(truck_medoc_api PRIVATE HAS_MYSQL=1)
+endif()
+
+# Configuration de build
+set(CMAKE_BUILD_TYPE Release)
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    target_compile_definitions(truck_medoc_api PRIVATE DEBUG=1)
+endif()
+
+# Options de compilation pour une meilleure performance
+target_compile_options(truck_medoc_api PRIVATE
+    $<$<CONFIG:Release>:-O3 -DNDEBUG>
+    $<$<CONFIG:Debug>:-g -O0>
+)

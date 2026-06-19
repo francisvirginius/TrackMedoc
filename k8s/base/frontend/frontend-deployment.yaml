@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: truck-medoc-frontend
+  namespace: truck-medoc
+  labels:
+    app: truck-medoc-frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: truck-medoc-frontend
+  template:
+    metadata:
+      labels:
+        app: truck-medoc-frontend
+    spec:
+      containers:
+      - name: frontend
+        image: francisvirginius/truck-medoc-frontend:latest
+        ports:
+        - containerPort: 80
+          name: http
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+  namespace: truck-medoc
+  labels:
+    app: truck-medoc-frontend
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+  selector:
+    app: truck-medoc-frontend

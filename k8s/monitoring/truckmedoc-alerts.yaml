@@ -1,0 +1,47 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: truck-medoc-alerts
+  namespace: monitoring
+  labels:
+    prometheus: kube-prometheus
+    role: alert-rules
+spec:
+  groups:
+  - name: truck-medoc.rules
+    rules:
+    - alert: TruckMedocAPIDown
+      expr: up{job="truck-medoc-api"} == 0
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "TruckMedoc API is down"
+        description: "TruckMedoc API has been down for more than 1 minute."
+    
+    - alert: TruckMedocHighMemoryUsage
+      expr: container_memory_working_set_bytes{namespace="truck-medoc"} / container_spec_memory_limit_bytes > 0.8
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High memory usage in TruckMedoc namespace"
+        description: "Memory usage is above 80% for {{ $labels.pod }}"
+    
+    - alert: TruckMedocHighCPUUsage
+      expr: rate(container_cpu_usage_seconds_total{namespace="truck-medoc"}[5m]) / container_spec_cpu_quota * 100 > 80
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High CPU usage in TruckMedoc namespace"
+        description: "CPU usage is above 80% for {{ $labels.pod }}"
+    
+    - alert: MySQLConnectionsHigh
+      expr: mysql_global_status_threads_connected / mysql_global_variables_max_connections * 100 > 80
+      for: 2m
+      labels:
+        severity: warning
+      annotations:
+        summary: "MySQL has high number of connections"
+        description: "MySQL connections usage is above 80%"

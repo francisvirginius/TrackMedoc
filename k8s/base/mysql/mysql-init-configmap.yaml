@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-init-script
+  namespace: truck-medoc
+data:
+  init.sql: |
+    USE molecules;
+    
+    CREATE TABLE IF NOT EXISTS molecules (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        formula VARCHAR(255) NOT NULL,
+        weight DECIMAL(10,4),
+        description TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+    
+    INSERT INTO molecules (id, name, formula, weight, description) VALUES
+    (1, 'Aspirine', 'C9H8O4', 180.16, 'Anti-inflammatoire non stéroïdien'),
+    (2, 'Paracétamol', 'C8H9NO2', 151.16, 'Analgésique et antipyrétique'),
+    (3, 'Ibuprofène', 'C13H18O2', 206.28, 'Anti-inflammatoire'),
+    (4, 'Doliprane', 'C8H9NO2', 151.16, 'Antalgique et antipyrétique'),
+    (5, 'Advil', 'C13H18O2', 206.28, 'Anti-inflammatoire et antalgique')
+    ON DUPLICATE KEY UPDATE name=VALUES(name);
